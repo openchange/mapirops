@@ -1,0 +1,189 @@
+[
+   revision    = "13.0",
+   version     = "v20140130",
+   release     = "February 10, 2014",
+   description = "Store Object Protocol Specification"
+] specification OXCSTOR
+{
+	[enumtype=flags, enumsize=8] enum LogonFlags {
+                LogonFlags_LogonPrivate		= 0x1,
+                LogonFlags_UnderCover		= 0x2,
+                LogonFlags_Ghosted		= 0x4	
+	};
+
+	[enumtype=flags, enumsize=32] enum OpenFlags {
+		OpenFlags_USE_ADMIN_PRIVILEGE  		= 0x1,
+		OpenFlags_PUBLIC			= 0x2,
+		OpenFlags_HOME_LOGON			= 0x4,
+		OpenFlags_TAKE_OWNERSHIP		= 0x8,
+		OpenFlags_ALTERNATE_SERVER		= 0x100,
+		OpenFlags_IGNORE_HOME_MDB		= 0x200,
+		OpenFlags_NO_MAIL			= 0x400,
+		OpenFlags_USE_PER_MDB_REPLID_MAPPING	= 0x01000000,
+		OpenFlags_SUPPORT_PROGRESS		= 0x20000000
+	};
+
+	struct RopLogon_request {
+		[value=0xFE] uint8		RopId;
+		uint8				LogonId;
+		uint8				OutputHandleIndex;
+		enum LogonFlags			LogonFlags;
+		enum OpenFlags			OpenFlags;
+		[value=0] uint32		StoreState;
+		uint16				EssDnSize;
+		[length=EssDnSize] ascii_string	EssDn;
+	};
+
+	[enumtype=flags, enumsize=8] enum ResponseFlags {
+	     ResponseFlags_Reserved    = 0x1,
+	     ResponseFlags_OwnerRight  = 0x2,
+	     ResponseFlags_SendAsRight = 0x4,
+	     ResponseFlags_OOF	       = 0x10
+	};
+
+	[enumsize=8] enum DayOfWeek {
+	     DayOfWeek_Sunday    = 0x0,
+	     DayOfWeek_Monday    = 0x1,
+	     DayOfWeek_Tuesday   = 0x2,
+	     DayOfWeek_Wednesday = 0x3,
+	     DayOfWeek_Thursday  = 0x4,
+	     DayofWeek_Friday    = 0x5,
+	     DayOfWeek_Saturday  = 0x6
+	};
+
+	[enumsize=8] enum CurrentMonth {
+	     CurrentMonth_January   = 0x1,
+	     CurrentMonth_February  = 0x2,
+	     CurrentMonth_March	    = 0x3,
+	     CurrentMonth_April	    = 0x4,
+	     CurrentMonth_May	    = 0x5,
+	     CurrentMonth_June	    = 0x6,
+	     CurrentMonth_July	    = 0x7,
+	     CurrentMonth_August    = 0x8,
+	     CurrentMonth_September = 0x9,
+	     CurrentMonth_October   = 0xA,
+	     CurrentMonth_November  = 0xB,
+	     CurrentMonth_December  = 0xC
+	};
+
+	struct LogonTime {
+	       uint8		 Seconds;
+	       uint8		 Minutes;
+	       uint8		 Hours;
+	       enum DayOfWeek	 DayOfWeek;
+	       uint8		 Day;
+	       enum CurrentMonth CurrentMonth;
+	       uint16		 Year;
+	};
+
+	struct RopLogon_mailbox {
+	       uint64			Root;
+	       uint64			DeferredAction;
+	       uint64			SpoolerQueue;
+	       uint64			IPMSubtree;
+	       uint64			Inbox;
+	       uint64			Outbox;
+	       uint64			SentItems;
+	       uint64			DeletedItems;
+	       uint64			CommonViews;
+	       uint64			Schedule;
+	       uint64			Search;
+	       uint64			Views;
+	       uint64			Shortcuts;
+	       enum ResponseFlags	ResponseFlags;
+	       GUID			MailboxGuid;
+	       uint16			ReplId;
+	       GUID			ReplGuid;
+	       struct LogonTime		LogonTime;	       
+	       uint64 			GwartTime;
+	       [value=0x0] uint32	StoreState;
+	};
+
+	struct RopLogon_publicfolders {
+	       uint64		       Root;
+	       uint64		       IPMSubtree;
+	       uint64		       NonIPMSubtree;
+	       uint64		       EFormsRegistry;
+	       uint64		       FreeBusy;
+	       uint64		       OAB;
+	       uint64		       LocaleEFormsRegistry;
+	       uint64		       LocalFreeBusy;
+	       uint64		       LocalOAB;
+	       uint64		       NNTPArticleIndex;
+	       [arraysize = 3] uint64  _Empty;
+	       uint16		       ReplId;
+	       GUID		       ReplGuid;
+	       GUID		       PerUserGuid;
+	};
+
+	[switch_size=8] union LogonType {
+		[case = LogonFlags_LogonPrivate  | 
+		("LogonFlags_LogonPrivate | LogonFlags_UnderCover")] struct RopLogon_mailbox mailbox;
+
+		[case = 0x0 | LogonFlags_Ghosted | 
+		("LogonFlags_Ghosted | LogonFlags_UnderCover")] struct RopLogon_publicfolders publicfolders;
+	};
+
+	struct RopLogon_success {
+	       enum LogonFlags				LogonFlags;
+	       [switch_is=LogonFlags] union LogonType	LogonType;
+	};
+
+	struct RopLogon_redirect {
+		enum LogonFlags				LogonFlags;
+		uint8					ServerNameSize;
+		[length=ServerNameSize] ascii_string	ServerName;
+	};
+
+	struct RopLogon_error {};
+
+	[switch_size=32] union RopLogon_response_type {
+	      [case = ecNone] struct RopLogon_success		success;
+	      [case = ecWrongServer] struct RopLogon_redirect	redirect;
+	      [case = ecLoginFailure           |
+	              ecUnknownUser	       |
+	              ecUnknownCodePage        |
+	              ecMailboxDisabled        |
+	              ecMailboxInTransit       |
+		      ecInvalidParameter       |
+		      ecProfileNotConfigured   |
+		      ecAccessDenied	       |
+		      ecLoginPerm	       |
+		      ecServerPaused] struct RopLogon_error	error;
+	};
+	
+	struct RopLogon_response {
+	       [value=0xFE] uint8					RopId;
+	       uint8							OutputHandleIndex;
+	       enum MAPISTATUS						ReturnValue;
+	       [switch_is=ReturnValue] union RopLogon_response_type	ResponseType;
+	};
+
+	struct RopGetReceiveFolder_request {
+		[value=0x27] uint8	RopId;
+		uint8			LogonId;
+		uint8			InputHandleIndex;
+		ascii_string		MessageClass;
+	};
+
+	struct RopGetReceiveFolder_success {
+	       uint64			FolderId;
+	       ascii_string		ExplicitMessageClass;
+	};
+
+	struct RopGetReceiveFolder_error {
+	};
+
+	[switch_size=32] union RopGetReceiveFolder_response_type {
+	      [case = ecNone] struct RopGetReceiveFolder_success success;
+	      [default] struct RopGetReceiveFolder_error	 error;
+	};
+
+	struct RopGetReceiveFolder_response {
+	       [value=0x27] uint8	RopId;
+	       uint8			InputHandleIndex;
+	       enum MAPISTATUS		ReturnValue;
+	       [switch_is=ReturnValue] union RopGetReceiveFolder_response_type ResponseType;
+	};
+
+};
