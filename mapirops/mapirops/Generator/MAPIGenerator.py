@@ -396,8 +396,8 @@ class MAPIGeneratorEnum(object):
             self.indent += 1
 
             # Ensure incoming value is between min,max enum values
-            (minval, _) = min(self.enumItems)
-            (maxval, _) = max(self.enumItems)
+            (minval, _) = min(self.enumItems, key=lambda enumItem: enumItem[1]);
+            (maxval, _) = max(self.enumItems, key=lambda enumItem: enumItem[1]);
             self.fd.write("\n/* Sanity Checks */\n")
             self.fd.write("%sif (%s < %s) return MAPIROPS_ERR_INVALID_VAL;\n" % ('\t' * self.indent, self.name, minval))
             self.fd.write("%sif (%s > %s) return MAPIROPS_ERR_INVALID_VAL;\n\n" % ('\t' * self.indent, self.name, maxval))
