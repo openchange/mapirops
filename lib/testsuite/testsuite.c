@@ -198,7 +198,7 @@ START_TEST (test_ascii)
 	fail_if(errval != MAPIROPS_ERR_SUCCESS);
 	fail_if(strcmp(in, out));
 
-	talloc_free(mem_ctx);
+	COMMON_TEST_END();
 }
 END_TEST
 
@@ -223,7 +223,7 @@ START_TEST (test_ascii_noterm)
 	fail_if(errval != MAPIROPS_ERR_SUCCESS);
 	fail_if(strcmp(in, out));
 
-	talloc_free(mem_ctx);
+	COMMON_TEST_END();
 }
 END_TEST
 
@@ -251,7 +251,7 @@ START_TEST (test_utf16)
 	fail_if(errval != MAPIROPS_ERR_SUCCESS);
 	fail_if(strcmp(in, out));
 
-	talloc_free(mem_ctx);
+	COMMON_TEST_END();
 }
 END_TEST
 
@@ -276,7 +276,7 @@ START_TEST (test_utf16_noterm)
 	fail_if(errval != MAPIROPS_ERR_SUCCESS);
 	fail_if(strcmp(in, out));
 
-	talloc_free(mem_ctx);
+	COMMON_TEST_END();
 }
 END_TEST
 
@@ -309,7 +309,7 @@ START_TEST (test_bytes)
 	fail_if(memcmp(in, out, strlen(BYTE_TEST_STR)));
 	fail_if(memcmp(out, BYTE_TEST_STR, strlen(BYTE_TEST_STR)));
 
-	talloc_free(mem_ctx);
+	COMMON_TEST_END();
 }
 END_TEST
 
@@ -347,7 +347,7 @@ START_TEST (test_GUID)
 		fail_if(in.Data3 != out.Data3);
 		fail_if(memcmp(in.Data4, out.Data4, 8));
 	
-		talloc_free(mem_ctx);
+		COMMON_TEST_END();
 	}
 
 	/* GUID 38 */
@@ -371,7 +371,7 @@ START_TEST (test_GUID)
 		fail_if(in.Data3 != out.Data3);
 		fail_if(memcmp(in.Data4, out.Data4, 8));
 	
-		talloc_free(mem_ctx);
+		COMMON_TEST_END();
 
 	}
 }
@@ -394,6 +394,8 @@ START_TEST (test_MAPISTATUS)
 	fail_if(errval != MAPIROPS_ERR_SUCCESS);
 	fail_if(pull->offset != sizeof(enum MAPISTATUS));
 	fail_if(out != MAPI_E_NO_ACCESS);
+
+        COMMON_TEST_END();
 }
 END_TEST
 
@@ -454,12 +456,15 @@ int main(int argc, const char *argv[])
 		switch (opt) {
 		case OPT_REFS:
 			testsuite_print_references();
+                        poptFreeContext(pc);
 			exit(0);
 			break;
 		default:
 			break;
 		}
 	}
+
+	poptFreeContext(pc);
 
 	s = primitives_suite();
 	sr = srunner_create(s);
