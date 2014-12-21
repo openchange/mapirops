@@ -641,20 +641,22 @@ enum mapirops_err_code mapirops_push_ascii_string(struct mapirops_push *push, in
 		str = NULL;
 		return MAPIROPS_ERR_SUCCESS;
 	}
-	
-	inlen = slen;
-	outlen = slen;
+        mem_ctx = talloc_named(NULL, 0, "mapirops_push_ascii");
 
-	mem_ctx = talloc_named(NULL, 0, "mapirops_push_ascii");
+        if ((str == NULL) || (strlen(str) == 0)) {
+                start = talloc_strdup(mem_ctx, "\0");
+        } else {
+                inlen = slen;
+                outlen = slen;
 
-	ascii_str = (char *) talloc_array(mem_ctx, uint8_t, outlen);
-	start = ascii_str;
-	ret = iconv(push->utf8toascii, &str, &inlen, &ascii_str, &outlen);
-	if (ret == (size_t)-1) {
-		talloc_free(mem_ctx);
-		return MAPIROPS_ERR_ICONV;
-	}
-
+                ascii_str = (char *) talloc_array(mem_ctx, uint8_t, outlen);
+                start = ascii_str;
+                ret = iconv(push->utf8toascii, &str, &inlen, &ascii_str, &outlen);
+                if (ret == (size_t)-1) {
+                        talloc_free(mem_ctx);
+                        return MAPIROPS_ERR_ICONV;
+                }
+        }
 	errcode = mapirops_push_bytes(push, (const uint8_t *)start, slen);
 
 	talloc_free(mem_ctx);
@@ -718,13 +720,16 @@ enum mapirops_err_code mapirops_pull_ascii_string(struct mapirops_pull *pull, TA
 	}
 
 	/* No iconv conversion required here: ASCII is a subset of UTF-8 */
-	*str = talloc_strndup(mem_ctx, (const char *)pull->data.data + pull->offset, src_len);
-	if (*str == NULL) {
-		return mapirops_error(MAPIROPS_ERR_ALLOC, LOG_ERR,
-				      "Failed to pull_ascii to %u", src_len);
-	}
-	
-	pull->offset += src_len;
+        if (src_len > 0) {
+            *str = talloc_strndup(mem_ctx, (const char *)pull->data.data + pull->offset, src_len);
+            if (*str == NULL) {
+                    return mapirops_error(MAPIROPS_ERR_ALLOC, LOG_ERR,
+                                        "Failed to pull_ascii to %u", src_len);
+            }
+            pull->offset += src_len;
+        } else {
+            *str = NULL;
+        }
 
 	return MAPIROPS_ERR_SUCCESS;
 }

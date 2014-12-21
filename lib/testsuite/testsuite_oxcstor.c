@@ -61,6 +61,8 @@ START_TEST (test_RopLogon_LogonFlags)
 	fail_if(!MAPIROPS_ERR_CODE_IS_SUCCESS(errval) || r != (LogonFlags_Ghosted|LogonFlags_UnderCover));
 	fail_if(pull->offset != push->offset);
 
+        COMMON_TEST_END()
+
 }
 END_TEST
 
@@ -115,6 +117,8 @@ START_TEST (test_RopLogon_OpenFlags)
 	fail_if(!MAPIROPS_ERR_CODE_IS_SUCCESS(errval) || r != OpenFlags_USE_PER_MDB_REPLID_MAPPING);
 	errval = mapirops_pull_enum_OpenFlags (pull, &r);
 	fail_if(!MAPIROPS_ERR_CODE_IS_SUCCESS(errval) || r != OpenFlags_SUPPORT_PROGRESS);
+
+        COMMON_TEST_END()
 }
 END_TEST
 
@@ -145,6 +149,7 @@ START_TEST (test_RopLogon_request)
 		errval = mapirops_push_struct_RopLogon_request(push, &request);
 		fail_if(errval != MAPIROPS_ERR_SUCCESS);
 
+                pull->mem_ctx = mem_ctx;
 		pull->data = push->data;
 		
 		errval = mapirops_pull_struct_RopLogon_request(pull, &orequest);
@@ -157,7 +162,7 @@ START_TEST (test_RopLogon_request)
 		fail_if(request.EssDnSize != orequest.EssDnSize);
 		fail_if(strcmp(request.EssDn, orequest.EssDn));
 
-		talloc_free(mem_ctx);
+		COMMON_TEST_END()
 	}
 
 	/* Test with EssDnSize == 0x0 */
@@ -170,6 +175,7 @@ START_TEST (test_RopLogon_request)
 		errval = mapirops_push_struct_RopLogon_request(push, &request);
 		fail_if(errval != MAPIROPS_ERR_SUCCESS);
 
+                pull->mem_ctx = mem_ctx;
 		pull->data = push->data;
 		errval = mapirops_pull_struct_RopLogon_request(pull, &orequest);
 		fail_if(errval != MAPIROPS_ERR_SUCCESS);
@@ -180,7 +186,7 @@ START_TEST (test_RopLogon_request)
 		fail_if(request.StoreState != orequest.StoreState);
 		fail_if(request.EssDnSize != orequest.EssDnSize);
 
-		talloc_free(mem_ctx);
+                COMMON_TEST_END()
 	}
 
 
@@ -194,6 +200,7 @@ START_TEST (test_RopLogon_request)
 		errval = mapirops_push_struct_RopLogon_request(push, &request);
 		fail_if(errval != MAPIROPS_ERR_SUCCESS);
 
+                pull->mem_ctx = mem_ctx;
 		pull->data = push->data;
 		errval = mapirops_pull_struct_RopLogon_request(pull, &orequest);
 		fail_if(errval != MAPIROPS_ERR_SUCCESS);
@@ -204,7 +211,7 @@ START_TEST (test_RopLogon_request)
 		fail_if(request.StoreState != orequest.StoreState);
 		fail_if(request.EssDnSize != orequest.EssDnSize);
 
-		talloc_free(mem_ctx);
+                COMMON_TEST_END()
 	}
 }
 END_TEST
@@ -244,7 +251,8 @@ START_TEST (test_RopLogon_LogonTime)
 		fail_if(LogonTime.Day != oLogonTime.Day);
 		fail_if(LogonTime.CurrentMonth != oLogonTime.CurrentMonth);
 		fail_if(LogonTime.Year != oLogonTime.Year);
-		talloc_free(mem_ctx);
+
+		COMMON_TEST_END()
 	}
 
 	/* Test invalid LogonTime DayOfWeek */
@@ -253,7 +261,7 @@ START_TEST (test_RopLogon_LogonTime)
 		LogonTime.DayOfWeek = 9;
 		errval = mapirops_push_struct_LogonTime(push, &LogonTime);
 		fail_if(errval != MAPIROPS_ERR_INVALID_VAL);
-		talloc_free(mem_ctx);
+		COMMON_TEST_END()
 	}
 
 	/* Test invalid LogonTime Month */
@@ -263,7 +271,7 @@ START_TEST (test_RopLogon_LogonTime)
 		LogonTime.CurrentMonth = 14;
 		errval = mapirops_push_struct_LogonTime(push, &LogonTime);
 		fail_if(errval != MAPIROPS_ERR_INVALID_VAL);
-		talloc_free(mem_ctx);
+		COMMON_TEST_END()
 	}
 
 }
@@ -281,7 +289,8 @@ START_TEST (test_RopLogon_response_OK)
 	/* Mailbox response */
 	{
 		COMMON_TEST_START(RopLogon_response);
-	}
+                COMMON_TEST_END()
+        }
 
 	/* Public folders response */
 }
@@ -303,6 +312,7 @@ Suite *oxcstor_suite(void)
 {
 	Suite	*s;
 	TCase	*TRopLogon;
+        TCase   *TRopGetReceiveFolder;
 
 	s = suite_create("[MS-OXCSTOR] ROPS");
 	TRopLogon = tcase_create("[MS-OXCSTOR] RopLogon");
@@ -316,7 +326,8 @@ Suite *oxcstor_suite(void)
 	tcase_add_test(TRopLogon, test_RopLogon_response_OK);
 	tcase_add_test(TRopLogon, test_RopLogon_response_Failure);
 	tcase_add_test(TRopLogon, test_RopLogon_response_Redirect);
-	return s;
+
+        return s;
 }
 
 void oxcstor_suite_references(void)
