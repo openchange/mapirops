@@ -933,8 +933,8 @@ enum mapirops_err_code mapirops_push_enum_MAPISTATUS(struct mapirops_push *push,
 /**
    \details Pull MAPISTATUS enumeration value
 
-   \parma pull Pointer to the mapirops_pull structure
-   \param v Pointer to the MAPISTATUS enum value to return
+   \param pull Pointer to the mapirops_pull structure
+   \param v    Pointer to the MAPISTATUS enum value to return
 
    \return MAPIROPS_ERR_SUCCESS on success, otherwise MAPIROPS error
  */
