@@ -30,9 +30,10 @@ such as:
 - stateless and context agnostic
 - string encoding depending on context (and specified codepage)
 
-Note that many of the mapirops library files, responsible for pushing/pulling content
-are derivated from existing Samba dcerpc client library code, but current headers do
-not acknowledge that. This will be fixed in forthcoming commits!
+Note that many of the mapirops library files responsible for
+pushing/pulling content are derivated from existing Samba dcerpc client
+library code, but current headers do not acknowledge that.  This will be
+fixed in forthcoming commits!
 
 
 Requirements
@@ -75,9 +76,9 @@ Testing the compiler
         ./mapirops/mapirops.py --file=mr/oxcstor.mr --outputdir=/tmp --mapi-gen
         Generating /tmp/oxcstor.h
         Generating /tmp/oxcstor.c
-        
+
         less /tmp/oxcstor.{c,h}
 
-When run with the `--debug` option, mapirops will display the content of the .mr
-file after it got processed and parsed.
+When run with the `--debug` option, mapirops will display the content of
+the .mr file after it is processed and parsed.
 
